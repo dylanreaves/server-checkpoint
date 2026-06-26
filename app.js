@@ -1,10 +1,16 @@
+let careNotes = [
+  { id: 1, plantId: 1, note: "Needs water every 2 weeks." },
+  { id: 2, plantId: 1, note: "Tolerates low light well." },
+  { id: 3, plantId: 3, note: "Loves humidity." },
+];
+let nextNoteId = careNotes.length+1;
+
 let plants = [
   { id: 1, name: "Snake Plant", type: "Succulent", sunlight: "Low", watered: true },
   { id: 2, name: "Pothos", type: "Vine", sunlight: "Medium", watered: false },
   { id: 3, name: "Monstera", type: "Tropical", sunlight: "Medium", watered: true },
   { id: 4, name: "Cactus", type: "Succulent", sunlight: "High", watered: false },
 ];
-
 let nextId = plants.length+1;
 
 const PORT = 8080
@@ -88,6 +94,47 @@ app.delete("/api/plants/:id", (req, res, next) => {
     } else {
         // 404 indicates the server couldn't find the requested item
         return res.status(404).send("No plant was found.")
+    }
+})
+
+app.get("/api/plants/:plantId/notes", (req, res, next) => {
+    // :plantId represents a dynamic parameter its a param because we need to locate which plant is being requested.
+    // notes isn't a parameter because it is the endpoint for which we get the note resources.
+    const plantId = Number(req.params.plantId)
+    const foundNotes = careNotes.filter((note) => note.plantId === plantId)
+    if (foundNotes.length > 0) {
+        return res.status(200).json(foundNotes)
+    } else {
+        return res.status(404).send("No care notes were found.")
+    }
+
+    return res.send(plants)
+})
+
+app.post("/api/plants/:plantId/notes", (req, res, next) => {
+    const plantId = Number(req.params.plantId)
+    const newNote = {}
+    newNote.id = nextNoteId
+    newNote.plantId = plantId
+    Object.assign(newNote, req.body)
+    careNotes.push(newNote)
+    nextNoteId++
+    return res.status(201).json(newNote)
+})
+
+app.delete("/api/notes/:id", (req, res, next) => {
+    // This route begins with notes because we don't need to do anything with the plants route.
+    // We only need to find the note with the matching ID and remove it.
+    const id = Number(req.params.id)
+    const found = careNotes.find((note) => note.id === id)
+    
+    if (found) {
+        careNotes.splice(careNotes.indexOf(found),1)
+        // 204 indicates the request went through and does not send any output 
+        return res.status(204).send("Removed a note with ID: " + id)
+    } else {
+        // 404 indicates the server couldn't find the requested item
+        return res.status(404).send("No note was found.")
     }
 })
 
