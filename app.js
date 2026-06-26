@@ -118,8 +118,6 @@ app.patch("/api/plants/:id", (req, res, next) => {
 
 app.delete("/api/plants/:id", (req, res, next) => {
     try {
-        // PATCH is made to merge new fields given in the body into an object instead of replacing it entirely.
-        // however in order to do this the programmer still need to decide the behavior for how it should work.
         const id = Number(req.params.id)
         const found = plants.find((plant) => plant.id === id)
         
