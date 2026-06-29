@@ -18,23 +18,13 @@ const express = require("express")
 const app = express()
 app.use(express.json())
 
-// If this was placed at the bottom it will run the request first so nothing will be logged.
-app.use(logRequests)
-
 function logRequests(req, res, next) {
     console.log(req.method, req.url)
     next()
 }
 
-// A great reason to have this middleware is to make sure any data coming into the server is valid so nothing breaks
-// If this middleware never calls next or never responds it will hang forever.
-function validPlant(req, res, next) {
-    if (req.body.name && req.body.type) {
-        next()
-    } else {
-        return res.status(400).send("Invalid plant: name or type is missing.")
-    }
-}
+// If this was placed at the bottom it will run the request first so nothing will be logged.
+app.use(logRequests)
 
 app.get("/api/plants", (req, res, next) => {
     try {
@@ -84,6 +74,16 @@ app.get("/api/plants/:id", async (req, res, next) => {
         next(error)
     }
 })
+
+// A great reason to have this middleware is to make sure any data coming into the server is valid so nothing breaks
+// If this middleware never calls next or never responds it will hang forever.
+function validPlant(req, res, next) {
+    if (req.body.name && req.body.type) {
+        next()
+    } else {
+        return res.status(400).send("Invalid plant: name or type is missing.")
+    }
+}
 
 app.post("/api/plants", validPlant, (req, res, next) => {
     try {
@@ -190,6 +190,8 @@ function handleError(req, res, next, error) {
     next()
 }
 
+// Forgot to add this but this will use the handleError function
+app.use(handleError)
 
 app.listen(PORT, () => {console.log("Server running on port:", PORT)})
 
